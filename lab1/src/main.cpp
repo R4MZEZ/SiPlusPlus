@@ -20,36 +20,40 @@ static std::map<string, string> types = {
 
 static std::set<string> operations = {"+", "-", "*", "/"};
 
-void read_type(ifstream* fin, string* var){
-	while((*fin).is_open()){
-		getline(*fin, *var);
-		if (types.count(*var) == 1){
-			cout << "Type '" << *var << "' correct!\n";
-			break;
-		}else{
-			cout << "Type '" << *var << "' does not exist!\n";
-		}
+bool read_type(ifstream* fin, string* var){
+	getline(*fin, *var);
+	if (types.count(*var) == 1){
+		cout << "Type '" << *var << "' correct!\n";
+		return true;
+	}else{
+		cout << "Type '" << *var << "' does not exist!\n";
+		return false;
 	}
+	
 }
 
-void read_operation(ifstream* fin, string* oper){
-	while((*fin).is_open()){
-		getline(*fin, *oper);
-		if (operations.count(*oper) == 1){
-			cout << "Operation '" << *oper << "' correct!\n";
-			break;
-		}else{
-			cout << "Operation '" << *oper << "' does not exist!\n";
-		}
+bool read_operation(ifstream* fin, string* oper){
+	getline(*fin, *oper);
+	if (operations.count(*oper) == 1){
+		cout << "Operation '" << *oper << "' correct!\n";
+		return true;
+	}else{
+		cout << "Operation '" << *oper << "' does not exist!\n";
+		return false;
 	}
 }
 
 int main(void){
     string type1, type2, operation;
 	ifstream fin("src/input.txt");
-    read_type(&fin, &type1);
-	read_type(&fin, &type2);
-	read_operation(&fin, &operation);
+    bool valid = read_type(&fin, &type1);
+	valid &= read_type(&fin, &type2);
+	valid &= read_operation(&fin, &operation);
+
+	if (!valid){
+		cout << "FATAL ERROR. INVALID DATA.\n";
+		return 1;
+	}
 
 	ofstream fout("output/func.cpp");
 	fout << "#include <iostream>" << endl;
