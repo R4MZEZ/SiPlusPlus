@@ -57,11 +57,20 @@ int main(void){
 
 	ofstream fout("output/func.cpp");
 	fout << "#include <iostream>" << endl;
-	fout << "int main(void) {"<< endl;
+	fout << "int func(void) {"<< endl;
 	fout << "\t" << type1 << " var1 = " << types[type1] << ";" << endl;
 	fout << "\t" << type2 << " var2 {" << types[type2] << "};" << endl;
 	fout << "\tstd::cout << var1 << \"" << operation <<  "\" << var2 << \" = \" << var1 " << operation << " var2 << std::endl;"<< endl;
-	fout << "\treturn 0;" << endl;
+	fout << "\treturn  0;" << endl;
+	fout << "}" << endl;
+	fout.close();
+
+	fout.open("output/main.cpp");
+	fout << "#include <iostream>" << endl;
+	fout << "#include \"func.cpp\"" << endl;
+	fout << "int main(void) {"<< endl;
+	fout << "\tfunc();" << endl;
+	fout << "\treturn  0;" << endl;
 	fout << "}" << endl;
 	fout.close();
 	return 0;

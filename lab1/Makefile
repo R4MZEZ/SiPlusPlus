@@ -7,9 +7,9 @@ TEST_DIR := output
 			
 INCLUDE := $(patsubst %, -I %, $(INCDIRS))						
 CPPFILES := $(foreach dir, $(SUB_DIR), $(wildcard $(dir)/*.cpp))
-TESTSRC := $(foreach dir, $(TEST_DIR), $(wildcard $(dir)/*.cpp))
+TESTSRC := $(TEST_DIR)/main.cpp
 
-CFLAGS := -O3 -std=c++17 -I$(INCLUDE_PATH) -B$(SOURCE_PATH)
+CFLAGS := -O3 -std=c++17
 CC := g++
 
 .PHONY: clean build
@@ -22,7 +22,7 @@ $(TARGET): $(CPPFILES)
 
 $(TEST_TARGET): $(TESTSRC)
 	$(CC) $(CFLAGS) -o $@ $<
-	./$@
+
 
 
 build: $(TARGET) Makefile
