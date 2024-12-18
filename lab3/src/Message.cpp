@@ -1,6 +1,29 @@
 #include "Message.hpp"
 #include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <random>
+#include <iterator>
+#include <numeric>
+#include <utility>
   
+
+
+Message::Message(unsigned count){
+    size = count;
+    text = new char[size];
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(32, 126);
+
+    for (unsigned i = 0; i < size; ++i) {
+        text[i] = dis(gen); // Генерация случайного символа
+    }
+
+    id = ++counter;
+    std::cout << "Basic constructor " << id << std::endl;
+}
 
 Message::Message(const char* data, unsigned count){
     size = count;
@@ -10,8 +33,8 @@ Message::Message(const char* data, unsigned count){
     }
 
     id = ++counter;
-    std::cout << "Basic constructor " << id << std::endl;
 }
+
 // конструктор копирования
 Message::Message(const Message& copy) : Message(copy.getText(), copy.size){
     std::cout << "Copy  constructor " << copy.id << " to " << id << std::endl;
@@ -36,7 +59,7 @@ Message &Message::operator=(const Message &other){
     if (this != &other){
         size = other.size;
         text = new char[size];
-        for(unsigned i{}; i < size; i++){
+        for(unsigned i = 0; i < size; i++){
             text[i] = other.text[i];
         }
     }
@@ -48,8 +71,13 @@ Message &Message::operator=(Message &&other) {
     if (this != &other){
         size = other.size;
         text = other.text;
+        other.text = nullptr;
     }
     return *this;
+}
+
+bool Message::operator<(const Message& other)  {
+    return size < other.size; // Сравнение по размеру (или любой другой критерий)
 }
 
 char* Message::getText() const { return text; }

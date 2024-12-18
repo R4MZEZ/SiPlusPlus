@@ -3,77 +3,85 @@
 #include <stdio.h>
 #include <list>
 #include <iostream>
+#include <algorithm>
+#include <numeric>
 
-void static_test(){
-    Message static_msg("help", 4);
-    Message* dynamic_msg = new Message("please", 6);
-    delete dynamic_msg;
-}
+int main() {
+    // 1. Создание вектора v1 с 500-1000 случайных элементов
+    std::vector<Message> v1;
+    unsigned size_v1 = 500 + rand() % 501; // Генерация размера вектора от 500 до 1000
+    v1.reserve(size_v1);
 
-void vector_test() {
-	std::vector<Message> vector;
-	vector.push_back(Message("First vector element", 21));
-	vector.push_back(Message("Second vector element", 22));
-	vector.push_back(Message("Third vector element", 21));
-    vector.push_back(Message("Fourth vector element", 22));
-	vector.push_back(Message("Fifth vector element", 21));
-	for (auto &item : vector)
-		printf("%s\n", item.getText());
-}
+    for (unsigned i = 0; i < size_v1; ++i) {
+        v1.push_back(Message(rand() % 100 + 1)); // случайные элементы
+    }
 
-void list_test() {
-	std::list<Message> list;
-	list.push_back(Message("First list element", 21));
-	list.push_back(Message("Second list element", 22));
-	list.push_back(Message("Third list element", 21));
-	list.push_back(Message("Fourth list element", 22));
-	list.push_back(Message("Fifth list element", 21));
-	for (auto &item : list)
-		printf("%s\n", item.getText());
-}
+    // 2. Создание вектора v2, содержащего последние 200 элементов из v1
+    std::vector<Message> v2(v1.end() - 200, v1.end());
 
-Message value_param(Message msg){
-    msg.setSize(999);
-    return msg;
-}
+    // 3. Создание списка list1 с n наибольших элементов из v1
+    std::sort(v1.begin(), v1.end(), [](const Message& m1, const Message& m2) {
+        return m1.getSize() > m2.getSize(); // Сортировка по размеру
+    });
 
-void value_param_func_test(){
-	Message static_msg("help", 4);
-    printf("Old size: %ld\n", static_msg.getSize());
-    Message new_msg = value_param(static_msg);
-    printf("New size: %ld\n", static_msg.getSize());
-}
+    unsigned n = 30;
+    std::list<Message> list1(v1.begin(), v1.begin() + n);
 
+    // 4. Создание списка list2 с n наименьших элементов из v2
+	std::sort(v2.begin(), v2.end(), [](const Message& m1, const Message& m2) {
+        return m1.getSize() > m2.getSize(); // Сортировка по размеру
+    });
 
-void ref_param(Message* msg){
-    msg->setSize(999);
-}
+    std::list<Message> list2(v2.end() - n, v2.end());
 
-void ref_param_func_test(){
-    Message msg("help", 4);
-    printf("Old size: %ld\n", msg.getSize());
-    ref_param(&msg);
-    printf("New size: %ld\n", msg.getSize());
-}
+    // 5. Удаление перемещенных элементов из v1 и v2
+    v1.erase(v1.begin(), v1.begin() + n);
+    v2.erase(v2.end() - n, v2.end());
 
-int main(){
-	std::cout << "--- STATIC TEST START ---" << std::endl;
-	static_test();
-	std::cout << "--- STATIC TEST END -----" << std::endl;
+    // 6. Перегруппировка элементов в list1 по среднему значению
+	int total_size = std::accumulate(list1.begin(), list1.end(), 0, [](int sum, const Message& m) {
+		return sum + m.getSize();
+	});
+	int avg = total_size / list1.size();
 
-	std::cout << "--- VECTOR TEST START ---" << std::endl;
-	vector_test();
-	std::cout << "--- VECTOR TEST END -----" << std::endl;
+    list1.sort([avg](const Message& m1, const Message& m2) {
+        return m1.getSize() > avg; // Все элементы больше среднего значения в начале
+    });
 
-	std::cout << "--- LIST TEST START -----" << std::endl;
-	list_test();
-	std::cout << "--- LIST TEST END -------" << std::endl;
+    // 7. Удаление нечётных элементов из list2
+    list2.remove_if([](const Message& m) {
+        return m.getSize() % 2 != 0; // Удаление нечётных элементов
+    });
 
-	std::cout << "--- FUNC TEST START -----" << std::endl;
-    value_param_func_test();
-	std::cout << "--- FUNC TEST END -------" << std::endl;
+    // 8. Создание вектора v3 из общих элементов v1 и v2
+    std::vector<Message> v3;
+    std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(v3));
 
-	std::cout << "--- REF FUNC TEST START -----" << std::endl;
-    ref_param_func_test();
-	std::cout << "--- REF FUNC TEST END -------" << std::endl;
+    // 9. Формирование списка list3 из пар элементов list1 и list2
+	size_t min_size = std::min(list1.size(), list2.size());
+	if (list1.size() > min_size) {
+		auto it = list1.begin();
+		std::advance(it, list1.size() - min_size);
+		list1.erase(list1.begin(), it);
+	}else if (list2.size() > min_size) {
+		auto it = list2.begin();
+		std::advance(it, list2.size() - min_size);
+		list2.erase(list2.begin(), it);
+	}
+    std::list<std::pair<Message, Message>> list3;
+	std::transform(list1.begin(), list1.end(), list2.begin(), std::back_inserter(list3),
+		[](const Message& m1, const Message& m2) {
+			return std::make_pair(m1, m2);
+		});
+    // 10. Создание списка пар для векторов v1 и v2
+    std::vector<std::pair<Message, Message>> v3_pairs;
+
+	std::transform(v1.begin(), v1.begin() + std::min(v1.size(), v2.size()), 
+               v2.begin(), 
+               std::back_inserter(v3_pairs), 
+               [](const Message& m1, const Message& m2) {
+                   return std::make_pair(m1, m2);
+               });
+
+    return 0;
 }
